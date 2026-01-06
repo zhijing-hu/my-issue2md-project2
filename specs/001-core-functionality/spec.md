@@ -72,6 +72,8 @@ https://github.com/{owner}/{repo}/discussions/{number}
 ```
 
 #### Markdown内容结构
+
+**注意**: 反应表情（👍👎😄🎉😕❤️🚀👀）仅在使用 `--enable-reactions` 参数时显示。
 ```markdown
 # [{type} #{number}] {title}
 
@@ -81,6 +83,7 @@ https://github.com/{owner}/{repo}/discussions/{number}
 > **创建时间**: {created_at}
 > **更新时间**: {updated_at}
 > **评论数**: {comments_count}
+> **反应表情**: 👍 {main_like_count} 👎 {main_dislike_count} 😄 {main_laugh_count} 🎉 {main_hooray_count} 😕 {main_confused_count} ❤️ {main_heart_count} 🚀 {main_rocket_count} 👀 {main_eyes_count}
 
 ---
 
@@ -93,8 +96,12 @@ https://github.com/{owner}/{repo}/discussions/{number}
 ### @{comment_author_1} - {comment_created_at}
 {comment_body_1}
 
+👍 {comment1_like_count} 👎 {comment1_dislike_count} 😄 {comment1_laugh_count} 🎉 {comment1_hooray_count} 😕 {comment1_confused_count} ❤️ {comment1_heart_count} 🚀 {comment1_rocket_count} 👀 {comment1_eyes_count}
+
 ### @{comment_author_2} - {comment_created_at}
 {comment_body_2}
+
+👍 {comment2_like_count} 👎 {comment2_dislike_count} 😄 {comment2_laugh_count} 🎉 {comment2_hooray_count} 😕 {comment2_confused_count} ❤️ {comment2_heart_count} 🚀 {comment2_rocket_count} 👀 {comment2_eyes_count}
 ```
 
 ### 2.3 认证与访问控制
@@ -145,6 +152,9 @@ issue2md https://github.com/owner/repo/issues/123
 # 指定输出路径
 issue2md https://github.com/owner/repo/issues/123 -o output/my_issue.md
 issue2md https://github.com/owner/repo/issues/123 --output /path/to/output.md
+
+# 开启反应表情(默认关闭)
+issue2md --enable-reactions https://github.com/owner/repo/issues/123
 
 # 私有仓库认证
 GITHUB_TOKEN="your_token" issue2md https://github.com/owner/private-repo/issues/456

@@ -72,6 +72,7 @@ type Issue struct {
     HTMLURL     string
     Repo        Repository
     Labels      []Label
+    Reactions   Reactions  // Main post reactions
 }
 
 // PullRequest represents a GitHub Pull Request
@@ -90,12 +91,29 @@ type Discussion struct {
 
 // Comment represents a single comment
 type Comment struct {
-    ID        int
-    Body      string
-    Author    User
-    CreatedAt time.Time
-    UpdatedAt time.Time
+    ID          int
+    Body        string
+    Author      User
+    CreatedAt   time.Time
+    UpdatedAt   time.Time
+    Reactions   Reactions  // Reaction counts
 }
+
+// Reactions represents reaction counts for a post
+type Reactions struct {
+    PlusOne     int  // 👍
+    MinusOne    int  // 👎
+    Laugh       int  // 😄
+    Hurray      int  // 🎉
+    Confused    int  // 😕
+    Heart       int  // ❤️
+    Rocket      int  // 🚀
+    Eyes        int  // 👀
+}
+
+// Issue now includes reactions
+// Comment is embedded above with reactions
+// PullRequest and Discussion inherit reactions through embedded Issue
 
 // User represents a GitHub user
 type User struct {
@@ -200,10 +218,25 @@ type Converter interface {
     ConvertDiscussion(discussion *github.Discussion) ([]byte, error)
 }
 
+// ConverterOption for optional features
+type ConverterOption func(*converter) error
+
+// WithReactions enables reaction display
+// Parameters: bool - enable reactions
+// Returns: ConverterOption
+func WithReactions(enabled bool) ConverterOption {
+    return func(c *converter) error {
+        c.enableReactions = enabled
+        return nil
+    }
+}
+
 // NewConverter creates new converter instance
 // Parameters: options...ConverterOption (functional options pattern)
+// Note: reactions disabled by default
 func NewConverter(options ...ConverterOption) Converter {
-    // Implementation: return markdown template-based converter
+    // Implementation: apply options and return markdown template-based converter
+    // Default: enableReactions = false
 }
 ```
 
@@ -214,6 +247,7 @@ func NewConverter(options ...ConverterOption) Converter {
 
 > **仓库**: [{Owner}/{Repo}]({RepoHTMLURL})
 > **状态**: {State}
+> **反应表情**: 👍 {{.Reactions.PlusOne}} 👎 {{.Reactions.MinusOne}} 😄 {{.Reactions.Laugh}} 🎉 {{.Reactions.Hurry}} 😕 {{.Reactions.Confused}} ❤️ {{.Reactions.Heart}} 🚀 {{.Reactions.Rocket}} 👀 {{.Reactions.Eyes}}
 > **作者**: @{Author.Login}
 > **创建时间**: {CreatedAt}
 > **更新时间**: {UpdatedAt}
@@ -229,6 +263,8 @@ func NewConverter(options ...ConverterOption) Converter {
 
 {range .Comments}### @{.Author.Login} - {.CreatedAt}
 {.Body}
+
+👍 {{.Reactions.PlusOne}} 👎 {{.Reactions.MinusOne}} 😄 {{.Reactions.Laugh}} 🎉 {{.Reactions.Hurry}} 😕 {{.Reactions.Confused}} ❤️ {{.Reactions.Heart}} 🚀 {{.Reactions.Rocket}} 👀 {{.Reactions.Eyes}}
 
 {end}
 ```
@@ -246,7 +282,7 @@ func NewConverter(options ...ConverterOption) Converter {
 |--------|---------------|---------------|----------------------|
 | `internal/github` | GitHub API communication | `net/http`,`context` | `Client` |
 | `internal/parser` | URL parsing & validation | `regex` | `Parser` |
-| `internal/converter` | Markdown rendering | `github` | `Converter` |
+| `internal/converter` | Markdown rendering | `github`, `template` | `Converter`, `WithReactions` |
 | `internal/cli` | CLI interface | `all internal` | - |
 | `internal/config` | Configuration | - | `Config` |
 
@@ -285,7 +321,7 @@ sequenceDiagram
         Client-->>CLI: *Discussion
     end
 
-    CLI->>Converter: converter.NewConverter()
+    CLI->>Converter: converter.NewConverter(WithReactions(false))
     CLI->>Converter: converter.ConvertXXX(resource)
     Converter-->>CLI: []byte (markdown)
 
