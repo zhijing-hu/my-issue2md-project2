@@ -5,6 +5,8 @@ import (
 	"context"
 	"fmt"
 	"os"
+
+	"github.com/bigwhite/issue2md/internal/parser"
 )
 
 // SimpleCLI is a working minimal CLI implementation
